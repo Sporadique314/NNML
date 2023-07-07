@@ -25,6 +25,17 @@ class Neuron:
     def neuronfeedforward(self, inputs):
         return sigmoid((self.weight1 * inputs[0]) + (self.weight2 * inputs[1]) + self.bias)
 
+    def updateNeuron(self, weight1, weight2, bias):
+        self.weight1 = weight1
+        self.weight2 = weight2
+        self.bias = bias
+    def displayNeuron(self):
+        print("----------------")
+        print("W1 = %f" %(self.weight1))
+        print("W2 = %f" % (self.weight2))
+        print("bias = %f" % (self.bias))
+        print("----------------")
+
 
 class NeuralNetwork:
     def __init__(self):
@@ -65,7 +76,7 @@ class NeuralNetwork:
                 sum_h2 = (self.w3 * x[0]) + (self.w4 * x[1]) + self.b2
                 h2 = sigmoid(sum_h2)
 
-                sum_o1 = (self.w5 * x[0]) + (self.w6 * x[1]) + self.b3
+                sum_o1 = (self.w5 * h1) + (self.w6 * h2) + self.b3
                 o1 = sigmoid(sum_o1)
 
                 y_pred = o1
@@ -107,11 +118,15 @@ class NeuralNetwork:
                 self.w6 -= learn_rate * d_L_d_ypred * d_ypred_d_w6
                 self.b3 -= learn_rate * d_L_d_ypred * d_ypred_d_b3
 
+                self.h1.updateNeuron(self.w1, self.w2, self.b1)
+                self.h2.updateNeuron(self.w3, self.w4, self.b2)
+                self.o1.updateNeuron(self.w5, self.w6, self.b3)
+
             if epoch % 10 == 0:
                 y_preds = np.apply_along_axis(self.networkfeedforward, 1, data)
                 loss = mse_loss(all_y_trues, y_preds)
-                # print("Epoch %d loss: %.3f" % (epoch, loss))
-                print(y_preds)
+                print("Epoch %d loss: %.3f" % (epoch, loss))
+
 
 
 data = np.array([
@@ -130,3 +145,11 @@ all_y_trues = np.array([
 # Train our neural network!
 network = NeuralNetwork()
 network.train(data, all_y_trues)
+
+# Make some predictions
+emily = np.array([-7, -3]) # 128 pounds, 63 inches
+frank = np.array([20, 2])  # 155 pounds, 68 inches
+baptiste = np.array([30,2])
+print("Emily: %.3f" % network.networkfeedforward(emily)) # 0.951 - F
+print("Frank: %.3f" % network.networkfeedforward(frank)) # 0.039 - M
+print("Baptiste: %.3f" % network.networkfeedforward(baptiste))
